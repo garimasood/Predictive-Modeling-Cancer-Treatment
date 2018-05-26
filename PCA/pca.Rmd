@@ -1,0 +1,113 @@
+---
+title: "mirna"
+author: "Garima Sood"
+date: "May 11, 2018"
+output: html_document
+---
+
+```{r}
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("edgeR")
+
+library(RColorBrewer)
+library(genefilter)
+library(edgeR)
+library(ggplot2)
+library(knitr)
+library(limma)
+```
+
+
+```{r}
+
+mirna <- read.csv("C:/Users/garim/Documents/Capstone/Full data/Normalized/mirna_BRCA_01_11_snip.csv")
+
+rownames(mirna) = mirna[,1]
+mirna = mirna[,2:ncol(mirna)]
+mirna_mat <- data.matrix(mirna)
+```
+
+```{r}
+heatmap(mirna_mat[1:200,], col=brewer.pal(9,"Blues"))
+```
+
+```{r}
+tmirna = t(mirna)
+colnames(tmirna) <- rownames(mirna)
+tmirna <- as.data.frame(apply(tmirna, 2, function(x) as.numeric(x)))
+rownames(tmirna) <- colnames(mirna)
+```
+
+```{r}
+varcol = apply(tmirna, 2, function(x) var(x))
+rem_col <- which(varcol==0)
+rem_col
+```
+
+```{r}
+tmirna_sc <- scale(tmirna[,-rem_col], center = TRUE, scale = TRUE)
+pc_tmirna <- prcomp((tmirna_sc), retx = TRUE)
+```
+
+
+```{r}
+plot(pc_tmirna, type = "l")
+vars <- apply(pc_tmirna$x, 2, var)
+props <- vars / sum(vars)
+plot(1:500, cumsum(props)[1:500])
+```
+
+```{r}
+var_exp <- as.data.frame(t(rbind(var = pc_tmirna$sdev^2*100/sum(pc_tmirna$sdev^2),
+                                 cum_var= cumsum(pc_tmirna$sdev^2*100/sum(pc_tmirna$sdev^2)))))
+
+plot(1:10, var_exp$cum_var[1:10] , type = "l", main = "Scree Plot for Train data", ylab = "% total variance")
+
+```
+
+
+```{r}
+
+rna <- read.csv("C:/Users/garim/Documents/Capstone/Full data/Normalized/rna_norm_log_counts_brca.csv")
+rownames(rna) = rna[,1]
+rna = rna[,2:ncol(rna)]
+rna_mat <- data.matrix(rna)
+```
+
+
+```{r}
+trna = t(rna)
+colnames(trna) <- rownames(rna)
+trna <- as.data.frame(apply(trna, 2, function(x) as.numeric(x)))
+rownames(trna) <- colnames(rna)
+
+```
+ 
+```{r}
+varcol = apply(trna, 2, function(x) var(x))
+rem_col <- which(varcol==0)
+rem_col
+```
+
+```{r}
+trna_sc <- scale(trna, center = TRUE, scale = TRUE)
+pc_trna <- prcomp((trna_sc), retx = TRUE)
+```
+
+
+```{r}
+plot(pc_trna, type = "l")
+vars <- apply(pc_trna$x, 2, var)
+props <- vars / sum(vars)
+plot(1:500, cumsum(props)[1:500])
+
+```
+
+
+
+
+
+
+
+
+
